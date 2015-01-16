@@ -1,0 +1,8 @@
+#noticebox {
+  position: absolute;
+  top: -50px;
+  left: 110px;
+
+  width: 300px;
+  height: 50px;
+}
