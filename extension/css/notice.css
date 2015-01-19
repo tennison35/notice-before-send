@@ -1,8 +1,12 @@
-#noticebox {
+.noticebox {
   position: absolute;
-  top: -50px;
-  left: 110px;
+  top: -37%;
+  left: 100px;
 
   width: 300px;
-  height: 50px;
+  height: auto;
+
+  z-index: 99999999999;
+  -webkit-user-select: none;
+  pointer-events: none;
 }
