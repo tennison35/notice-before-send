@@ -40,23 +40,38 @@ var NBS = function() {
     window.onhashchange = onHashChange;
   }
 
-  function onHashChange () {
+  function onHashChange() {
       console.log('hashchange');
       setupListener();
   }
 
-  function setupListener () {
+  function appendNoticBox() {
+    console.log('NBS.appendNoticBox');
+
+    $('.aoI').each(function(i, el){
+      var $el = $(el);
+      if($el.find('.noticebox').length === 0){
+        var $popupNewMessage,popupNewMessage,isPopupNotice,noticeClass,$noticebox;
+        $popupNewMessage = $(_g.popupNewMessage);
+        popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
+        isPopupNotice = $.contains(popupNewMessage, $el[0]);
+        noticeClass = isPopupNotice? 'popupNotice' : 'onPageNotice';
+        $noticebox =
+          $('<div/>', {
+            class: ['noticebox','alert','alert-danger',noticeClass].join(' ')
+          })
+            .hide()
+
+        $el.append( $noticebox );
+      }
+    })
+  }
+
+
+  function setupListener() {
     console.log('setupListener');
 
-    if($('.aoI').find('.noticebox').length === 0){
-      $('.aoI').append(
-        $('<div/>', {
-          id: 'noticebox',
-          class: 'noticebox alert alert-danger'
-        })
-        .hide()
-      );
-    }
+    appendNoticBox();
 
     $(_g.recipientInput).off().focus(function(){
       console.log('NBS.focus');
