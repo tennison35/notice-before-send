@@ -90,46 +90,49 @@ var NBS = function() {
       ){
 
       checkRecipients(false)
-    }
-    if(_status.popup.isReplyBoxActive ||
+    } else if(_status.popup.isReplyBoxActive ||
        _status.msgPage.isReplyBoxActive
        ){
       checkRecipients(true);
     }
   }
 
-  function checkRecipients(isActive) {
+  function checkRecipients() {
     console.log('onBlurTextbox');
-    var $wrap, $els, $el, email, isExtenal, extenalEmails;
-    isExtenal = false;
-    extenalEmails = [];
 
-    if(isActive){
-      $wrap = $(_g.recipientWrapActive);
-      $els = $wrap.find('[email]');
-    } else {
-      $wrap = $(_g.replyBoxPresented);
-      $els = $wrap.find('[email]');
-    }
+    $wraps = $(_g.recipientWrap);
 
-    if(!$els.length) return false;
+    $wraps.each(function(i, wrap){
+      var $wrap, $email_els, $el, email, extenalEmails;
+      extenalEmails = [];
+      $wrap = $(wrap);
+      $email_els = $wrap.find('[email]');
 
-    $els.each(function(i, el){
-      $el = $(el);
-      email = $el.attr('email');
-      if(email.indexOf(_internal) === -1){
-        extenalEmails.push(email);
-        isExtenal = true;
-      }
+      if($email_els.length){
+        var $popupNewMessage = $(_g.popupNewMessage);
+        var popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
+        var isWrapInPopup = $.contains(popupNewMessage, $wrap[0]);
+
+        $email_els.each(function(i, el){
+          $el = $(el);
+          email = $el.attr('email');
+          if(email.indexOf(_internal) === -1){
+            if(extenalEmails.indexOf(email) === -1){
+              extenalEmails.push(email);
+            }
+          }
+        });
+
+        if(extenalEmails.length){
+          showAlert({
+            email: extenalEmails.join(', '),
+            isPopup: isWrapInPopup
+          });
+        } else {
+          hideAlert(isWrapInPopup);
+        }
+      };
     });
-
-    if(isExtenal){
-      popupAlert({
-        email: extenalEmails.join(', ')
-      });
-    } else {
-      hideAlert();
-    }
   }
 
   function checkStatus() {
@@ -183,14 +186,16 @@ var NBS = function() {
     console.log('status:', _status);
   }
 
-  function popupAlert(data) {
-    $('#noticebox').show().text('Do you really want to include '+data.email+' ?');
-    console.log('noticebox:popup');
+  function showAlert(data) {
+    console.log('noticebox:show');
+    var noticebox = data.isPopup? $('.noticebox.popupNotice') : $('.noticebox.onPageNotice');
+    noticebox.show().text('External Recipients: '+data.email);
   }
 
-  function hideAlert() {
-    $('#noticebox').hide();
+  function hideAlert(isPopup) {
     console.log('noticebox:hide');
+    var noticebox = isPopup? $('.noticebox.popupNotice') : $('.noticebox.onPageNotice');
+    noticebox.hide();
   }
 
   init();
