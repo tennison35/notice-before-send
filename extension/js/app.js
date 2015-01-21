@@ -80,25 +80,29 @@ var NBS = function() {
     $(_g.recipientInput).off().keypress(function(){
       console.log('NBS.keypress');
       setupListener();
-      checkRecipients(true);
+      checkRecipients();
     });
 
 
-    checkStatus();
-    if(_status.msgPage.isReply && !_status.msgPage.isReplyBoxActive ||
-       _status.popup.isMaximized
+    var status = checkStatus();
+    if(status.msgPage.isReply && !status.msgPage.isReplyBoxActive ||
+       status.popup.isMaximized
       ){
 
-      checkRecipients(false)
-    } else if(_status.popup.isReplyBoxActive ||
-       _status.msgPage.isReplyBoxActive
+      checkRecipients()
+    } else if(status.popup.isReplyBoxActive ||
+       status.msgPage.isReplyBoxActive
        ){
-      checkRecipients(true);
+      checkRecipients();
     }
   }
 
+  function isElementContrain(parent, children) {
+    return $.contains(parent, children);
+  }
+
   function checkRecipients() {
-    console.log('onBlurTextbox');
+    console.log('checkRecipients');
 
     $wraps = $(_g.recipientWrap);
 
@@ -111,7 +115,7 @@ var NBS = function() {
       if($email_els.length){
         var $popupNewMessage = $(_g.popupNewMessage);
         var popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
-        var isWrapInPopup = $.contains(popupNewMessage, $wrap[0]);
+        var isWrapInPopup = isElementContrain(popupNewMessage, $wrap[0]);
 
         $email_els.each(function(i, el){
           $el = $(el);
@@ -135,67 +139,85 @@ var NBS = function() {
     });
   }
 
+  function checkOnPageStatus(hash_arr) {
+    var $noReply, $replyBox, isReply, isNoReplyFound, isNoReplyDisplayNone, isReplyBoxFound, isReplyBoxDisplay;
+    $noReply = $(_g.noReply);
+    $replyBox = $(_g.replyBox);
+    isNoReplyFound = !!$noReply.length;
+    isNoReplyDisplayNone = !($noReply.css('display') !== "none");
+    isReplyBoxFound = !!$replyBox.length;
+    isReplyBoxDisplay = ($replyBox.css('display') !== "none");
+    messageID = hash_arr[2] || ''; // 14aea826eba93d4e
+    isReply = (!!messageID && !isNoReplyFound && !isNoReplyDisplayNone) || false;
+
+    return {
+      id: messageID || '',
+      isActive: !!messageID || false,
+      isReply: isReply,
+      isReplyBoxActive: (isReply && isReplyBoxFound && isReplyBoxDisplay) || false
+    };
+  }
+
+  function checkPopupStatus(hash_arr){
+    var topRightMiniBtn, popupMessageReplyBox, isPopupMessageReplyBoxDisplay, isTopRightMinimizeButton, isPopupMessage, popupMessageID;
+
+    topRightMiniBtn = $(_g.popupMessageRightTopMinimizeButton);
+    popupMessageReplyBox = $(_g.popupNewMessage).find(_g.replyBox);
+    isPopupMessageReplyBoxDisplay = (popupMessageReplyBox.css('display') !== "none");
+    isTopRightMinimizeButton = (topRightMiniBtn.data('tooltip') === "Minimize");
+    popupStatus_arr = hash_arr[3] && hash_arr[3].split('=') || [];
+    isPopupMessage = (popupStatus_arr[0] === 'compose');
+    popupMessageID = popupStatus_arr[1] || '';
+    isMaximized = isTopRightMinimizeButton || false;
+
+    return {
+      id: popupMessageID || '',
+      isActive: isPopupMessage || false,
+      isMaximized: isMaximized,
+      isReplyBoxActive: isMaximized && popupMessageReplyBox && isPopupMessageReplyBoxDisplay || false
+    };
+  }
+
   function checkStatus() {
     // inbox page: https://mail.google.com/mail/u/0/#inbox
     // message page: https://mail.google.com/mail/u/0/#inbox/14aea826eba93d4e
     // popup message: https://mail.google.com/mail/u/0/#inbox/14aea826eba93d4e?compose=new
     // drafts page: https://mail.google.com/mail/u/0/#drafts?compose=14af2e2e6fe7deae
+    var hash, hash_arr, page, messageID, popupStatus, popupStatus_arr, status, msgPage, popup;
 
-    var hash = window.location.hash;
-    var hash_arr = hash.split(/#([^?/]+)?\/?([^/?]+)?\??([^&]+)?/);
+    hash = window.location.hash;
+    hash_arr = hash.split(/#([^?/]+)?\/?([^/?]+)?\??([^&]+)?/);
 
     page = hash_arr[1]; // #inbox
-    messageID = hash_arr[2] || ''; // 14aea826eba93d4e
-    popupStatus = hash_arr[3] || ''; // compose=new
-    popupStatus_arr = popupStatus.split('=')
-    isPopupMessage = (popupStatus_arr[0] === 'compose');
-    popupMessageID = popupStatus_arr[1] || '';
 
-    var msgPage = {};
-    var $noReply = $(_g.noReply);
-    var $replyBox = $(_g.replyBox);
-    var isNoReplyFound = !!$noReply.length;
-    var isNoReplyDisplayNone = !($noReply.css('display') !== "none");
-    var isReplyBoxFound = !!$replyBox.length;
-    var isReplyBoxDisplay = ($replyBox.css('display') !== "none");
-    msgPage.isActive = !!messageID || false;
-    msgPage.id = messageID || '';
-    msgPage.isReply = (msgPage.isActive && !isNoReplyFound && !isNoReplyDisplayNone) || false;
-    msgPage.isReplyBoxActive = (msgPage.isReply && isReplyBoxFound && isReplyBoxDisplay) || false;
+    msgPage = checkOnPageStatus( hash_arr );
+    popup = checkPopupStatus( hash_arr );
 
-    var popup = {};
-    var topRightMiniBtn = $(_g.popupMessageRightTopMinimizeButton);
-    var popupMessageReplyBox = $(_g.popupNewMessage).find(_g.replyBox);
-    var isPopupMessageReplyBoxDisplay = (popupMessageReplyBox.css('display') !== "none");
-    var isTopRightMinimizeButton = (topRightMiniBtn.data('tooltip') === "Minimize");
-    popup.id = popupMessageID || '';
-    popup.isActive = (popupStatus && isPopupMessage) || false;
-    popup.isMaximized = isTopRightMinimizeButton || false;
-    popup.isReplyBoxActive = popup.isMaximized && popupMessageReplyBox && isPopupMessageReplyBoxDisplay || false;
-
-    _status = {
+    status = {
       hash_arr: hash_arr,
       page: page,
-      messageID: messageID,
       popupStatus: popupStatus,
-      isPopupMessage: isPopupMessage,
       msgPage: msgPage,
       popup: popup
     };
 
-    console.log('status:', _status);
+    console.log('status:', status);
+    return status;
   }
 
   function showAlert(data) {
     console.log('noticebox:show');
     var noticebox = data.isPopup? $('.noticebox.popupNotice') : $('.noticebox.onPageNotice');
-    noticebox.show().text('External Recipients: '+data.email);
+    noticebox
+      .show()
+      .text('External Recipients: '+data.email);
   }
 
   function hideAlert(isPopup) {
     console.log('noticebox:hide');
     var noticebox = isPopup? $('.noticebox.popupNotice') : $('.noticebox.onPageNotice');
-    noticebox.hide();
+    noticebox
+      .hide();
   }
 
   init();
