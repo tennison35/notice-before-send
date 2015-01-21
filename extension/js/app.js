@@ -1,4 +1,4 @@
-var App = function() {
+var NBS = function() {
   var _this = {};
   var _internal = 'alphasights';
   var _status = null;
@@ -30,7 +30,7 @@ var App = function() {
   }
 
   function init () {
-    console.log('app.init');
+    console.log('NBS.init');
 
     setInterval(function(){
       console.log('setTimeout');
@@ -70,6 +70,15 @@ var App = function() {
         .hide()
       );
     }
+
+    $(_g.recipientInput).off().focus(function(){
+      console.log('NBS.focus');
+      setupListener();
+    });
+    $(_g.recipientInput).off().keypress(function(){
+      console.log('NBS.keypress');
+      setupListener();
+    });
 
 
     checkStatus();
@@ -193,10 +202,12 @@ var App = function() {
 
   function popupAlert(data) {
     $('#noticebox').show().text('Do you really want to include '+data.email+' ?');
+    console.log('noticebox:popup');
   }
 
   function hideAlert() {
     $('#noticebox').hide();
+    console.log('noticebox:hide');
   }
 
   init();
@@ -205,5 +216,5 @@ var App = function() {
 };
 
 $(document).ready(function(){
-  window.noticeBeforeSend = new App();
+  window.noticeBeforeSend = new NBS();
 });
