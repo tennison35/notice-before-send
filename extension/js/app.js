@@ -58,7 +58,7 @@ var NBS = function() {
         noticeClass = isPopupNotice? 'popupNotice' : 'onPageNotice';
         $noticebox =
           $('<div/>', {
-            class: ['noticebox','alert','alert-danger',noticeClass].join(' ')
+            class: ['noticebox','alert','alert-warning',noticeClass].join(' ')
           })
             .hide()
 
