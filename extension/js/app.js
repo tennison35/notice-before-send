@@ -78,6 +78,8 @@ var NBS = function() {
     $(_g.recipientInput).off().keypress(function(){
       console.log('NBS.keypress');
       setupListener();
+      checkRecipients(true);
+      checkRecipients(false);
     });
 
 
@@ -139,7 +141,7 @@ var NBS = function() {
       $els = $wrap.find('[email]');
     }
 
-    if(!$els.length) hideAlert();;
+    if(!$els.length) return false;
 
     $els.each(function(i, el){
       $el = $(el);
