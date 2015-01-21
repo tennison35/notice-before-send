@@ -8,6 +8,10 @@
   -webkit-user-select: none;
   transform: translateY(-100%);
 }
+.noticebox:hover {
+  opacity: 0.3;
+}
+
 .aaZ {
   overflow: visible !important;
 }
