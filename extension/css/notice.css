@@ -1,20 +1,22 @@
 .noticebox {
   position: absolute;
-  top: -63px;
-  left: 100px;
-  width: 300px;
+  top: -11px;
+  left: 0;
+  width: 93%;
   height: auto;
   z-index: 99999999999;
   -webkit-user-select: none;
-  pointer-events: none;
+  transform: translateY(-100%);
 }
 .aaZ {
   overflow: visible !important;
 }
-.aoI .noticebox{
-  top: -66px;
-  left: 117px;
-  width: 200px
+.AD .aoI .noticebox{
+  top: -39px;
+  left: 0;
+  width: 93%;
+  transform: translateY(-100%);
+  z-index: 99999999999;
 }
 .alert {
   padding: 15px;
