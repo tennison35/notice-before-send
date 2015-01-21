@@ -79,7 +79,6 @@ var NBS = function() {
       console.log('NBS.keypress');
       setupListener();
       checkRecipients(true);
-      checkRecipients(false);
     });
 
 
