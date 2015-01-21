@@ -17,7 +17,7 @@ var NBS = function() {
     'contactUpperText':'.am',
     // message page
     'replyActive':'.gA.gt',
-    'noReply':'.gA.gt.acV',
+    'noReply':'.amn',
     'replyBox': '.fX.aXjCH', // under .gA.gt // check display for activation
     'wrapContact': '.vR', // the contact block when user confirm emails
     'replyBoxPresented':'.oL.aDm.az9',
@@ -178,16 +178,26 @@ var NBS = function() {
     popupMessageID = popupStatus_arr[1] || '';
 
     var msgPage = {};
+    var $noReply = $(_g.noReply);
+    var $replyBox = $(_g.replyBox);
+    var isNoReplyFound = !!$noReply.length;
+    var isNoReplyDisplayNone = !($noReply.css('display') !== "none");
+    var isReplyBoxFound = !!$replyBox.length;
+    var isReplyBoxDisplay = ($replyBox.css('display') !== "none");
     msgPage.isActive = !!messageID || false;
     msgPage.id = messageID || '';
-    msgPage.isReply = (msgPage.isActive && !$(_g.noReply).length || false);
-    msgPage.isReplyBoxActive = msgPage.isReply && !!$(_g.replyBox).length && ($(_g.replyBox).css('display') !== "none") || false;
+    msgPage.isReply = (msgPage.isActive && !isNoReplyFound && !isNoReplyDisplayNone) || false;
+    msgPage.isReplyBoxActive = (msgPage.isReply && isReplyBoxFound && isReplyBoxDisplay) || false;
 
-    var popup = {}
-    popup.id = popupMessageID || ''
-    popup.isActive = (popupStatus && isPopupMessage) || false
-    popup.isMaximized = ($(_g.popupMessageRightTopMinimizeButton).data('tooltip') === "Minimize") || false
-    popup.isReplyBoxActive = popup.isMaximized && ($(_g.popupNewMessage).find(_g.replyBox).css('display') !== "none") || false
+    var popup = {};
+    var topRightMiniBtn = $(_g.popupMessageRightTopMinimizeButton);
+    var popupMessageReplyBox = $(_g.popupNewMessage).find(_g.replyBox);
+    var isPopupMessageReplyBoxDisplay = (popupMessageReplyBox.css('display') !== "none");
+    var isTopRightMinimizeButton = (topRightMiniBtn.data('tooltip') === "Minimize");
+    popup.id = popupMessageID || '';
+    popup.isActive = (popupStatus && isPopupMessage) || false;
+    popup.isMaximized = isTopRightMinimizeButton || false;
+    popup.isReplyBoxActive = popup.isMaximized && popupMessageReplyBox && isPopupMessageReplyBoxDisplay || false;
 
     _status = {
       hash_arr: hash_arr,
