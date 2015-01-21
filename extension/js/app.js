@@ -38,19 +38,6 @@ var NBS = function() {
     }, 5*1000);
 
     window.onhashchange = onHashChange;
-
-    // detect the blur of the textbox
-    // setTimeout(function(){
-    //   $(_g.recipientWrap).focusout(onBlurTextbox);
-    //   $(_g.recipientWrap)[0].addEventListener('DOMNodeInserted', onBlurTextbox, false);
-    //   $('.aoI').append(
-    //      $('<div/>', {
-    //         id: 'noticebox',
-    //         class: 'alert alert-danger'
-    //       })
-    //       .hide()
-    //   );
-    // }, 10*1000);
   }
 
   function onHashChange () {
@@ -94,36 +81,6 @@ var NBS = function() {
        ){
       checkRecipients(true);
     }
-
-    // $('.amr').off().on('click', function(e){
-    //   console.log('msgPage.isnoReply:click');
-    //   setTimeout(function(){
-    //     setupListener();
-    //   }, 1*1000);
-    // });
-
-    // $('.Iy').off().on('click', function(e){
-    //   console.log('msgPage.isReply.upperbox:click');
-    //   setTimeout(function(){
-    //     setupListener();
-    //   }, 1*1000);
-    // })
-
-    // $(_g.recipientInput).off().on({
-    //   focus: function(){
-    //     console.log('msgPage.recipientInput:focus');
-    //     setTimeout(function(){
-    //       setupListener();
-    //     }, 2*1000);
-    //   },
-    //   focusout: function(){
-    //     console.log('msgPage.recipientInput:focusout');
-    //     setTimeout(function(){
-    //       setupListener();
-    //     }, 2*1000);
-    //   }
-    // })
-
   }
 
   function checkRecipients(isActive) {
