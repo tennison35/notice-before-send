@@ -1,10 +1,9 @@
 .noticebox {
   position: absolute;
-  top: -11px;
+  top: -15px;
   left: 0;
   width: 93%;
   height: auto;
-  z-index: 99999999999;
   -webkit-user-select: none;
   transform: translateY(-100%);
 }
