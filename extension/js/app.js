@@ -27,7 +27,7 @@ var NBS = function() {
     'popupNewMessageMaximized':'', // check display for activation
     'popupReplyBox':'.fX.aXjCH', // under .AD // check display for activation
     'presentReplyBox': '.aoD.hl' // oposite to .fX.aXjCH, check display for activation
-  }
+  };
 
   function init () {
     console.log('NBS.init');
@@ -60,11 +60,11 @@ var NBS = function() {
           $('<div/>', {
             class: ['noticebox','alert','alert-warning',noticeClass].join(' ')
           })
-            .hide()
+            .hide();
 
         $el.append( $noticebox );
       }
-    })
+    });
   }
 
 
@@ -78,14 +78,14 @@ var NBS = function() {
       setTimeout(function(){
         setupListener();
         checkRecipients(e);
-      })
+      });
     });
     $(_g.recipientInput).off().keydown(function(e){
       console.log('NBS.keypress');
       setTimeout(function(){
         setupListener();
         checkRecipients(e);
-      })
+      });
     });
 
 
@@ -94,7 +94,7 @@ var NBS = function() {
        status.popup.isMaximized
       ){
 
-      checkRecipients()
+      checkRecipients();
     } else if(status.popup.isReplyBoxActive ||
        status.msgPage.isReplyBoxActive
        ){
@@ -110,7 +110,7 @@ var NBS = function() {
     console.log('checkRecipients', e);
 
     var target = e && $(e.target).parents(_g.recipientWrap) || _g.recipientWrap;
-    $wraps = $(target);
+    var $wraps = $(target);
 
     $wraps.each(function(i, wrap){
       var $wrap, $email_els, $el, email, extenalEmails;
@@ -141,7 +141,7 @@ var NBS = function() {
 
         if(e && isRemoveEmail){
           var removeEmail = $(e.target).parents('.vN.Y7BVp[email]').attr('email');
-          extenalEmails.splice(extenalEmails.indexOf(removeEmail), 1)
+          extenalEmails.splice(extenalEmails.indexOf(removeEmail), 1);
         }
 
         if(extenalEmails.length){
@@ -161,15 +161,15 @@ var NBS = function() {
   }
 
   function checkOnPageStatus(hash_arr) {
-    var $noReply, $replyBox, isReply, isNoReplyFound, isNoReplyDisplayNone, isReplyBoxFound, isReplyBoxDisplay;
+    var $noReply, $replyBox, isReply, isNoReplyFound, isNoReplyDisplay, isReplyBoxFound, isReplyBoxDisplay, messageID;
     $noReply = $(_g.noReply);
     $replyBox = $(_g.replyBox);
     isNoReplyFound = !!$noReply.length;
-    isNoReplyDisplayNone = !($noReply.css('display') !== "none");
+    isNoReplyDisplay = $noReply.css('display') !== "none";
     isReplyBoxFound = !!$replyBox.length;
     isReplyBoxDisplay = ($replyBox.css('display') !== "none");
     messageID = hash_arr[2] || ''; // 14aea826eba93d4e
-    isReply = (!!messageID && !isNoReplyFound && !isNoReplyDisplayNone) || false;
+    isReply = (!!messageID && !isNoReplyFound && !!isNoReplyDisplay) || false;
 
     return {
       id: messageID || '',
@@ -180,7 +180,7 @@ var NBS = function() {
   }
 
   function checkPopupStatus(hash_arr){
-    var topRightMiniBtn, popupMessageReplyBox, isPopupMessageReplyBoxDisplay, isTopRightMinimizeButton, isPopupMessage, popupMessageID;
+    var isMaximized, popupStatus_arr, topRightMiniBtn, popupMessageReplyBox, isPopupMessageReplyBoxDisplay, isTopRightMinimizeButton, isPopupMessage, popupMessageID;
 
     topRightMiniBtn = $(_g.popupMessageRightTopMinimizeButton);
     popupMessageReplyBox = $(_g.popupNewMessage).find(_g.replyBox);
