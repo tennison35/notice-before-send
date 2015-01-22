@@ -1,6 +1,6 @@
 {
-  "name": "pixelbomb",
-  "version": "0.4.1",
+  "name": "Notice Before Send",
+  "version": "0.0.3",
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-chrome-extension-reload": "~0.2.6",
