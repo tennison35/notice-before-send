@@ -33,9 +33,8 @@ var NBS = function() {
     console.log('NBS.init');
 
     setInterval(function(){
-      console.log('setTimeout');
       setupListener();
-    }, 5*1000);
+    }, 3*1000);
 
     window.onhashchange = onHashChange;
   }
@@ -69,19 +68,19 @@ var NBS = function() {
 
 
   function setupListener() {
-    console.log('setupListener');
+    console.log('NBS.setupListener');
 
     appendNoticBox();
 
     $(_g.recipientInput).off().focus(function(e){
-      console.log('NBS.focus');
+      console.log('recipientInput.focus');
       setTimeout(function(){
         setupListener();
         checkRecipients(e);
       });
     });
     $(_g.recipientInput).off().keydown(function(e){
-      console.log('NBS.keypress');
+      console.log('recipientInput.keypress');
       setTimeout(function(){
         setupListener();
         checkRecipients(e);
@@ -109,12 +108,11 @@ var NBS = function() {
   function checkRecipients(e, isRemoveEmail) {
     console.log('checkRecipients', e);
 
-    var target = e && $(e.target).parents(_g.recipientWrap) || _g.recipientWrap;
-    var $wraps = $(target);
+    var $wraps = $(_g.recipientWrap);
+    var extenalEmails = [];
 
     $wraps.each(function(i, wrap){
-      var $wrap, $email_els, $el, email, extenalEmails;
-      extenalEmails = [];
+      var $wrap, $email_els, $el, email;
       $wrap = $(wrap);
       $email_els = $wrap.find('[email]');
 
@@ -144,20 +142,21 @@ var NBS = function() {
           extenalEmails.splice(extenalEmails.indexOf(removeEmail), 1);
         }
 
-        if(extenalEmails.length){
-          showAlert({
-            email: extenalEmails.join(', '),
-            isPopup: isWrapInPopup
-          });
-        } else {
-          hideAlert(isWrapInPopup);
-        }
       } else {
         if(e && e.target){
           hideAlert(isWrapInPopup);
         }
       }
     });
+
+    if(extenalEmails.length){
+      showAlert({
+        email: extenalEmails.join(', '),
+        isPopup: isWrapInPopup
+      });
+    } else {
+      hideAlert(isWrapInPopup);
+    }
   }
 
   function checkOnPageStatus(hash_arr) {
