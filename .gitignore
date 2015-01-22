@@ -1,3 +1,7 @@
+# NBS
+ext/
+.tmp/
+
 ### OSX ###
 .DS_Store
 .AppleDouble
@@ -20,3 +24,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Nodejs
+node_modules/
