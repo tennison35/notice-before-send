@@ -73,14 +73,19 @@ var NBS = function() {
 
     appendNoticBox();
 
-    $(_g.recipientInput).off().focus(function(){
+    $(_g.recipientInput).off().focus(function(e){
       console.log('NBS.focus');
-      setupListener();
+      setTimeout(function(){
+        setupListener();
+        checkRecipients(e);
+      })
     });
-    $(_g.recipientInput).off().keypress(function(){
+    $(_g.recipientInput).off().keydown(function(e){
       console.log('NBS.keypress');
-      setupListener();
-      checkRecipients();
+      setTimeout(function(){
+        setupListener();
+        checkRecipients(e);
+      })
     });
 
 
@@ -101,10 +106,11 @@ var NBS = function() {
     return $.contains(parent, children);
   }
 
-  function checkRecipients() {
-    console.log('checkRecipients');
+  function checkRecipients(e, isRemoveEmail) {
+    console.log('checkRecipients', e);
 
-    $wraps = $(_g.recipientWrap);
+    var target = e && $(e.target).parents(_g.recipientWrap) || _g.recipientWrap;
+    $wraps = $(target);
 
     $wraps.each(function(i, wrap){
       var $wrap, $email_els, $el, email, extenalEmails;
@@ -112,10 +118,11 @@ var NBS = function() {
       $wrap = $(wrap);
       $email_els = $wrap.find('[email]');
 
+      var $popupNewMessage = $(_g.popupNewMessage);
+      var popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
+      var isWrapInPopup = isElementContrain(popupNewMessage, $wrap[0]);
+
       if($email_els.length){
-        var $popupNewMessage = $(_g.popupNewMessage);
-        var popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
-        var isWrapInPopup = isElementContrain(popupNewMessage, $wrap[0]);
 
         $email_els.each(function(i, el){
           $el = $(el);
@@ -123,9 +130,19 @@ var NBS = function() {
           if(email.indexOf(_internal) === -1){
             if(extenalEmails.indexOf(email) === -1){
               extenalEmails.push(email);
+
+              $el.find('.vM').off().on('click', function(e){
+                console.log('contact-cross.click');
+                checkRecipients(e, true);
+              });
             }
           }
         });
+
+        if(e && isRemoveEmail){
+          var removeEmail = $(e.target).parents('.vN.Y7BVp[email]').attr('email');
+          extenalEmails.splice(extenalEmails.indexOf(removeEmail), 1)
+        }
 
         if(extenalEmails.length){
           showAlert({
@@ -135,7 +152,11 @@ var NBS = function() {
         } else {
           hideAlert(isWrapInPopup);
         }
-      };
+      } else {
+        if(e && e.target){
+          hideAlert(isWrapInPopup);
+        }
+      }
     });
   }
 
