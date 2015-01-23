@@ -49,8 +49,16 @@ module.exports = function (grunt) {
     },
 
     mocha: {
-      test: {
-        src: ['tests/**/*.html'],
+      all: {
+        src: [
+          // 'test/onPageMessagePage-noReply-notActive-noContact.html',
+          'test/test.html',
+        ],
+        options: {
+          reporter: 'Spec',
+          run: true,
+          log: true
+        },
       },
     },
 
@@ -93,23 +101,6 @@ module.exports = function (grunt) {
           'ext/nbs.css' : 'extension/css/*.css'
         }
       }
-    },
-
-    imagemin: {
-      png: {
-        options: {
-          optimizationLevel: 7
-        },
-        files: [
-          {
-            expand: true,
-            cwd: './assets/',
-            src: ['**/*.png'],
-            dest: './ext/assets/',
-            ext: '.png'
-          }
-        ]
-      }
     }
   });
 
@@ -138,8 +129,6 @@ module.exports = function (grunt) {
 
   grunt.registerTask('default',
     [
-      // Test
-      'jshint', 'mocha',
       // Arrange
       'copy', 'concat',
       // Minify
