@@ -1,250 +1,298 @@
-var NBS = function() {
-  var _this = {};
-  var _internal = 'alphasights';
-  var _status = null;
-  var _timeout = null;
-  var _id_list = [];
-  var _g = {
-    'recipientWrapActive':'.wO.nr.l1',
-    'recipientWrap':'.wO.nr',
-    'recipientInput':'textarea.vO',
-    'lightboxWrap':'.ah.aiv.aJS',
-    'lightboxWrapClass':'ah aiv aJS',
-    'contactHighlighted': '.Jd-Je.Je',
-    'contactHighlightedClass': 'Jd-Je Je',
-    'contact':'.Jd-axF',
-    'contactLowerText':'.Sr',
-    'contactUpperText':'.am',
-    // message page
-    'replyActive':'.gA.gt',
-    'noReply':'.amn',
-    'replyBox': '.fX.aXjCH', // under .gA.gt // check display for activation
-    'wrapContact': '.vR', // the contact block when user confirm emails
-    'replyBoxPresented':'.oL.aDm.az9',
-    // popup page
-    'popupNewMessage':'.AD',
-    'popupMessageRightTopMinimizeButton': '.Hl', // check data-tooltip = Minimize || Maximize (oposite to status)
-    'popupNewMessageMaximized':'', // check display for activation
-    'popupReplyBox':'.fX.aXjCH', // under .AD // check display for activation
-    'presentReplyBox': '.aoD.hl' // oposite to .fX.aXjCH, check display for activation
-  };
-
-  function init () {
-    console.log('NBS.init');
-
-    setInterval(function(){
-      setupListener();
-    }, 3*1000);
-
-    window.onhashchange = onHashChange;
-  }
-
-  function onHashChange() {
-      console.log('hashchange');
-      setupListener();
-  }
-
-  function appendNoticBox() {
-    console.log('NBS.appendNoticBox');
-
-    $('.aoI').each(function(i, el){
-      var $el = $(el);
-      if($el.find('.noticebox').length === 0){
-        var $popupNewMessage,popupNewMessage,isPopupNotice,noticeClass,$noticebox;
-        $popupNewMessage = $(_g.popupNewMessage);
-        popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
-        isPopupNotice = $.contains(popupNewMessage, $el[0]);
-        noticeClass = isPopupNotice? 'popupNotice' : 'onPageNotice';
-        $noticebox =
-          $('<div/>', {
-            class: ['noticebox','alert','alert-warning',noticeClass].join(' ')
-          })
-            .hide();
-
-        $el.append( $noticebox );
-      }
-    });
-  }
-
-
-  function setupListener() {
-    console.log('NBS.setupListener');
-
-    appendNoticBox();
-
-    $(_g.recipientInput).off().focus(function(e){
-      console.log('recipientInput.focus');
-      setTimeout(function(){
-        setupListener();
-        checkRecipients(e);
-      });
-    });
-    $(_g.recipientInput).off().keydown(function(e){
-      console.log('recipientInput.keypress');
-      setTimeout(function(){
-        setupListener();
-        checkRecipients(e);
-      });
-    });
-
-
-    var status = checkStatus();
-    if(status.msgPage.isReply && !status.msgPage.isReplyBoxActive ||
-       status.popup.isMaximized
-      ){
-
-      checkRecipients();
-    } else if(status.popup.isReplyBoxActive ||
-       status.msgPage.isReplyBoxActive
-       ){
-      checkRecipients();
-    }
-  }
-
-  function isElementContrain(parent, children) {
-    return $.contains(parent, children);
-  }
-
-  function checkRecipients(e, isRemoveEmail) {
-    console.log('checkRecipients', e);
-
-    var $wraps = $(_g.recipientWrap);
-    var extenalEmails = [];
-
-    $wraps.each(function(i, wrap){
-      var $wrap, $email_els, $el, email;
-      $wrap = $(wrap);
-      $email_els = $wrap.find('[email]');
-
-      var $popupNewMessage = $(_g.popupNewMessage);
-      var popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
-      var isWrapInPopup = isElementContrain(popupNewMessage, $wrap[0]);
-
-      if($email_els.length){
-
-        $email_els.each(function(i, el){
-          $el = $(el);
-          email = $el.attr('email');
-          if(email.indexOf(_internal) === -1){
-            if(extenalEmails.indexOf(email) === -1){
-              extenalEmails.push(email);
-
-              $el.find('.vM').off().on('click', function(e){
-                console.log('contact-cross.click');
-                checkRecipients(e, true);
-              });
-            }
-          }
-        });
-
-        if(e && isRemoveEmail){
-          var removeEmail = $(e.target).parents('.vN.Y7BVp[email]').attr('email');
-          extenalEmails.splice(extenalEmails.indexOf(removeEmail), 1);
-        }
-
-      } else {
-        if(e && e.target){
-          hideAlert(isWrapInPopup);
-        }
-      }
-    });
-
-    if(extenalEmails.length){
-      showAlert({
-        email: extenalEmails.join(', '),
-        isPopup: isWrapInPopup
-      });
-    } else {
-      hideAlert(isWrapInPopup);
-    }
-  }
-
-  function checkOnPageStatus(hash_arr) {
-    var $noReply, $replyBox, isReply, isNoReplyFound, isNoReplyDisplay, isReplyBoxFound, isReplyBoxDisplay, messageID;
-    $noReply = $(_g.noReply);
-    $replyBox = $(_g.replyBox);
-    isNoReplyFound = !!$noReply.length;
-    isNoReplyDisplay = $noReply.css('display') !== "none";
-    isReplyBoxFound = !!$replyBox.length;
-    isReplyBoxDisplay = ($replyBox.css('display') !== "none");
-    messageID = hash_arr[2] || ''; // 14aea826eba93d4e
-    isReply = (!!messageID && !isNoReplyFound && !!isNoReplyDisplay) || false;
-
-    return {
-      id: messageID || '',
-      isActive: !!messageID || false,
-      isReply: isReply,
-      isReplyBoxActive: (isReply && isReplyBoxFound && isReplyBoxDisplay) || false
-    };
-  }
-
-  function checkPopupStatus(hash_arr){
-    var isMaximized, popupStatus_arr, topRightMiniBtn, popupMessageReplyBox, isPopupMessageReplyBoxDisplay, isTopRightMinimizeButton, isPopupMessage, popupMessageID;
-
-    topRightMiniBtn = $(_g.popupMessageRightTopMinimizeButton);
-    popupMessageReplyBox = $(_g.popupNewMessage).find(_g.replyBox);
-    isPopupMessageReplyBoxDisplay = (popupMessageReplyBox.css('display') !== "none");
-    isTopRightMinimizeButton = (topRightMiniBtn.data('tooltip') === "Minimize");
-    popupStatus_arr = hash_arr[3] && hash_arr[3].split('=') || [];
-    isPopupMessage = (popupStatus_arr[0] === 'compose');
-    popupMessageID = popupStatus_arr[1] || '';
-    isMaximized = isTopRightMinimizeButton || false;
-
-    return {
-      id: popupMessageID || '',
-      isActive: isPopupMessage || false,
-      isMaximized: isMaximized,
-      isReplyBoxActive: isMaximized && popupMessageReplyBox && isPopupMessageReplyBoxDisplay || false
-    };
-  }
-
-  function checkStatus() {
-    // inbox page: https://mail.google.com/mail/u/0/#inbox
-    // message page: https://mail.google.com/mail/u/0/#inbox/14aea826eba93d4e
-    // popup message: https://mail.google.com/mail/u/0/#inbox/14aea826eba93d4e?compose=new
-    // drafts page: https://mail.google.com/mail/u/0/#drafts?compose=14af2e2e6fe7deae
-    var hash, hash_arr, page, messageID, popupStatus, popupStatus_arr, status, msgPage, popup;
-
-    hash = window.location.hash;
-    hash_arr = hash.split(/#([^?/]+)?\/?([^/?]+)?\??([^&]+)?/);
-
-    page = hash_arr[1]; // #inbox
-
-    msgPage = checkOnPageStatus( hash_arr );
-    popup = checkPopupStatus( hash_arr );
-
-    status = {
-      hash_arr: hash_arr,
-      page: page,
-      popupStatus: popupStatus,
-      msgPage: msgPage,
-      popup: popup
-    };
-
-    console.log('status:', status);
-    return status;
-  }
-
-  function showAlert(data) {
-    console.log('noticebox:show');
-    var noticebox = data.isPopup? $('.noticebox.popupNotice') : $('.noticebox.onPageNotice');
-    noticebox
-      .show()
-      .text('External Recipients: '+data.email);
-  }
-
-  function hideAlert(isPopup) {
-    console.log('noticebox:hide');
-    var noticebox = isPopup? $('.noticebox.popupNotice') : $('.noticebox.onPageNotice');
-    noticebox
-      .hide();
-  }
-
-  init();
-
-  return _this;
+var _g = {
+  'recipientWrapActive':'.wO.nr.l1',
+  'recipientWrap':'.wO.nr',
+  'recipientInput':'textarea.vO',
+  'lightboxWrap':'.ah.aiv.aJS',
+  'lightboxWrapClass':'ah aiv aJS',
+  'contactHighlighted': '.Jd-Je.Je',
+  'contactHighlightedClass': 'Jd-Je Je',
+  'contact':'.Jd-axF',
+  'contactLowerText':'.Sr',
+  'contactUpperText':'.am',
+  'replyArea': '.aoI',
+  // message page
+  'replyActive':'.gA.gt',
+  'noReply':'.amn',
+  'replyBox': '.fX.aXjCH', // under .gA.gt // check display for activation
+  'wrapContact': '.vR', // the contact block when user confirm emails
+  'replyBoxPresented':'.oL.aDm.az9',
+  // popup page
+  'popupNewMessage':'.AD',
+  'popupMessageRightTopMinimizeButton': '.Hl', // check data-tooltip = Minimize || Maximize (oposite to status)
+  'popupNewMessageMaximized':'', // check display for activation
+  'popupReplyBox':'.fX.aXjCH', // under .AD // check display for activation
+  'presentReplyBox': '.aoD.hl' // oposite to .fX.aXjCH, check display for activation
 };
 
+var NoticeBox = function(parent, isPopup) {
+  this.classes = ['noticebox','alert','alert-danger'];
+
+  this.create();
+  this.setType(isPopup);
+  this.appendTo(parent);
+  this.hide();
+}
+
+NoticeBox.prototype.appendTo = function(parent) {
+  this.parent = parent;
+  parent.attr('data-noticeBox-id', this.id);
+  parent.append(this.$el);
+}
+NoticeBox.prototype.create = function(){
+  this.id = Util.genId(10);
+
+  this.$el = $('<div/>', {
+    id: this.id,
+    class: this.classes.join(' ')
+  });
+
+  return this.$el;
+}
+
+NoticeBox.prototype.setType = function(isPopup){
+  this.isPopup = isPopup;
+  this.$el.addClass(isPopup? 'popupNotice' : 'onPageNotice');
+  this.$el.attr('data-isPopup', isPopup);
+}
+NoticeBox.prototype.hide = function(){
+  console.log('noticebox id: '+this.id+' is hidden.');
+  this.$el.hide();
+}
+NoticeBox.prototype.updateAndShow = function(data){
+  this.updateText(data);
+  this.show();
+}
+
+NoticeBox.prototype.show = function(){
+  console.log('noticebox id: '+this.id+' is shown.');
+  this.$el.show();
+}
+NoticeBox.prototype.updateText = function(data){
+  this.$el.text('External Recipients: ' + data.email.join(', '));
+}
+var Util = {
+  list: [],
+  isElementContrain: function(parent, children) {
+    return $.contains(parent, children);
+  },
+  genId: function (digit){
+    digit = digit || 10;
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    do {
+      for( var i=0, len = possible.length; i < digit; i++ ){
+        text += possible.charAt(Math.floor(Math.random() * len));
+      }
+    } while (this.list.indexOf(text) !== -1);
+
+    this.list.push(text);
+
+    return text;
+  }
+}
+
+function onPageChecker () {
+  this.type = "onpage";
+  this.hash_arr = window.location.hash.split(/#([^?/]+)?\/?([^/?]+)?\??([^&]+)?/);
+  this.$noReply = $(_g.noReply);
+  this.$replyBox = $(_g.replyBox);
+
+  this.setID(this.hash_arr[2] || null);
+
+};
+onPageChecker.prototype.setID = function(id) {
+  this.id = id;
+}
+onPageChecker.prototype.status  = function() {
+  return {
+    id: this.id,
+    isActive: this.isActive(),
+    isReply: this.isReply(),
+    isReplyBoxActive: this.isReplyBoxActive()
+  };
+}
+onPageChecker.prototype.isActive = function() {
+  return !!this.id || false;
+}
+onPageChecker.prototype.isReply = function() {
+  var isNoReplyFound = !!this.$noReply.length;
+  var isNoReplyDisplay = this.$noReply.css('display') !== "none";
+
+  return (!!this.id && !isNoReplyFound && !!isNoReplyDisplay) || false;
+}
+onPageChecker.prototype.isReplyBoxActive = function() {
+  var isReplyBoxFound = !!this.$replyBox.length;
+  var isReplyBoxDisplay = (this.$replyBox.css('display') !== "none");
+
+  return (this.isReply() && isReplyBoxFound && isReplyBoxDisplay) || false;
+}
+
+function PopupChecker () {
+  this.hash_arr = window.location.hash.split(/#([^?/]+)?\/?([^/?]+)?\??([^&]+)?/);
+  this.$topRightMiniBtn = $(_g.popupMessageRightTopMinimizeButton);
+  this.$popupMessageReplyBox = $(_g.popupNewMessage).find(_g.replyBox);
+  this.popupStatus_arr = this.hash_arr[3] && this.hash_arr[3].split('=') || [];
+
+  this.setID(this.popupStatus_arr[1] || null);
+
+  this.type = "popup";
+};
+PopupChecker.prototype.setID = function(id) {
+  this.id = id;
+}
+PopupChecker.prototype.status  = function() {
+  return {
+    id: this.id,
+    isActive: this.isActive(),
+    isMaximized: this.isMaximized(),
+    isReplyBoxActive: this.isReplyBoxActive()
+  };
+}
+PopupChecker.prototype.isActive = function() {
+  var isPopupMessage = (this.popupStatus_arr[0] === 'compose');
+  return !!isPopupMessage || false;
+}
+PopupChecker.prototype.isMaximized = function() {
+  var isTopRightMinimizeButton = (this.$topRightMiniBtn.data('tooltip') === "Minimize");
+
+  return isTopRightMinimizeButton || false;
+}
+PopupChecker.prototype.isReplyBoxActive = function() {
+  var isPopupMessageReplyBoxDisplay = (this.$popupMessageReplyBox.css('display') !== "none");
+  return this.isMaximized() && this.$popupMessageReplyBox && isPopupMessageReplyBoxDisplay || false;
+}
+
+var App = function() {
+  console.log('App.init');
+  this.internal = 'alphasights';
+  this.noticeboxes = [];
+
+  window.onhashchange = $.proxy(this.updateStatus, this);
+
+  setInterval($.proxy(function(){
+    console.log('App.updateStatus');
+    this.updateStatus();
+  }, this), 3*1000);
+}
+
+App.prototype.get = function(noticeboxId){
+  return this.noticeboxes[noticeboxId];
+}
+
+App.prototype.checkRecipients = function(e) {
+  console.log('checkRecipients', e);
+
+  var extenalEmails = [];
+  var internal = this.internal;
+  var app = this;
+
+  this.$recipientWrap = $(_g.recipientWrap);
+  this.replyArea = this.$recipientWrap.parents(_g.replyArea);
+  var noticeboxId = this.replyArea.data('noticebox-id');
+
+  console.log('noticeboxId:', noticeboxId);
+
+  $(_g.recipientWrap).each(function(i, wrap){
+    var $wrap, $email_els, $el, email;
+    $wrap = $(wrap);
+    $email_els = $wrap.find('[email]');
+
+    var $popupNewMessage = $(_g.popupNewMessage);
+    var popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
+    var isWrapInPopup = Util.isElementContrain(popupNewMessage, $wrap[0]);
+
+    if($email_els.length){
+
+      $email_els.each(function(i, el){
+        $el = $(el);
+        email = $el.attr('email');
+        if(email.indexOf(internal) === -1){
+          if(extenalEmails.indexOf(email) === -1){
+            extenalEmails.push(email);
+
+            $el.find('.vM').off().on('click', function(e){
+              console.log('contact-cross.click');
+              app.checkRecipients(e, true);
+            });
+          }
+        }
+      });
+
+      if(e){
+        var removeEmail = $(e.target).parents('.vN.Y7BVp[email]').attr('email');
+        extenalEmails.splice(extenalEmails.indexOf(removeEmail), 1);
+      }
+
+    } else {
+      if(e && e.target){
+        app.get(noticeboxId)
+          .hide();
+      }
+    }
+  });
+
+  if(extenalEmails.length){
+    this.get(noticeboxId)
+      .updateAndShow({
+        email: extenalEmails
+      });
+  } else {
+    this.get(noticeboxId)
+      .hide();
+  }
+}
+
+App.prototype.appendNoticBox = function() {
+  $(_g.replyArea).each( $.proxy(function(i, el){
+    var $el = $(el);
+    if(!$el.data('noticebox-id')){
+      var $popupNewMessage, popupNewMessage, isPopup, $noticebox;
+      $popupNewMessage = $(_g.popupNewMessage);
+      popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
+      isPopup = Util.isElementContrain(popupNewMessage, $el[0]);
+
+      $noticebox = new NoticeBox($el, isPopup);
+      this.noticeboxes[$noticebox.id] = $noticebox;
+    }
+  }, this));
+}
+App.prototype.updateStatus = function() {
+  var app = this;
+
+  this.appendNoticBox();
+
+  $(_g.recipientInput)
+    .off()
+    .focus(function(e){
+      console.log('recipientInput.focus');
+      setTimeout(function(){
+        app.updateStatus();
+        app.checkRecipients(e);
+      });
+    })
+    .keydown(function(e){
+      console.log('recipientInput.keypress');
+      setTimeout(function(){
+        app.updateStatus();
+        app.checkRecipients(e);
+      })
+    });
+
+
+  if(new onPageChecker().isReply() && !new onPageChecker().isReplyBoxActive() ||
+    new PopupChecker().isMaximized() ){
+      this.checkRecipients();
+  } else if(new PopupChecker().isReplyBoxActive() ||
+    new onPageChecker().isReplyBoxActive() ){
+      this.checkRecipients();
+  }
+}
+
+App.prototype.setting = function(opts){
+  this.internal = opts.internal && opts.internal.split(',');
+}
+
 $(document).ready(function(){
-  window.noticeBeforeSend = new NBS();
+  window.noticeBeforeSend = new App();
 });
