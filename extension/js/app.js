@@ -180,7 +180,7 @@ App.prototype.get = function(noticeboxId){
   return this.noticeboxes[noticeboxId];
 }
 
-App.prototype.checkRecipients = function(e) {
+App.prototype.checkRecipients = function(e, isRemoveEmail) {
   console.log('checkRecipients', e);
 
   var extenalEmails = [];
@@ -219,7 +219,7 @@ App.prototype.checkRecipients = function(e) {
         }
       });
 
-      if(e){
+      if(e && isRemoveEmail){
         var removeEmail = $(e.target).parents('.vN.Y7BVp[email]').attr('email');
         extenalEmails.splice(extenalEmails.indexOf(removeEmail), 1);
       }
@@ -259,6 +259,8 @@ App.prototype.appendNoticBox = function() {
 }
 App.prototype.updateStatus = function() {
   var app = this;
+  var pageChecker = new onPageChecker();
+  var popupChecker = new PopupChecker();
 
   this.appendNoticBox();
 
@@ -267,24 +269,21 @@ App.prototype.updateStatus = function() {
     .focus(function(e){
       console.log('recipientInput.focus');
       setTimeout(function(){
-        app.updateStatus();
         app.checkRecipients(e);
       });
     })
     .keydown(function(e){
       console.log('recipientInput.keypress');
       setTimeout(function(){
-        app.updateStatus();
         app.checkRecipients(e);
       })
     });
 
-
-  if(new onPageChecker().isReply() && !new onPageChecker().isReplyBoxActive() ||
-    new PopupChecker().isMaximized() ){
+  if(pageChecker.isReply() && !pageChecker.isReplyBoxActive() ||
+    popupChecker.isMaximized() ){
       this.checkRecipients();
-  } else if(new PopupChecker().isReplyBoxActive() ||
-    new onPageChecker().isReplyBoxActive() ){
+  } else if(popupChecker.isReplyBoxActive() ||
+    pageChecker.isReplyBoxActive() ){
       this.checkRecipients();
   }
 }
