@@ -9,6 +9,7 @@ var _g = {
   'contact':'.Jd-axF',
   'contactLowerText':'.Sr',
   'contactUpperText':'.am',
+  'contactCloseButton': '.vM',
   'replyArea': '.aoI',
   // message page
   'replyActive':'.gA.gt',
@@ -165,7 +166,7 @@ PopupChecker.prototype.isReplyBoxActive = function() {
 
 var App = function() {
   console.log('App.init');
-  this.internal = 'alphasights';
+  this.internal_arr = ['alphasights'];
   this.noticeboxes = [];
 
   window.onhashchange = $.proxy(this.updateStatus, this);
@@ -176,70 +177,62 @@ var App = function() {
   }, this), 3*1000);
 }
 
-App.prototype.get = function(noticeboxId){
+App.prototype.getNoticeboxWithId = function(noticeboxId){
   return this.noticeboxes[noticeboxId];
 }
 
-App.prototype.checkRecipients = function(e, isRemoveEmail) {
-  console.log('checkRecipients', e);
+App.prototype.isExternal = function(email) {
+  return !$(this.internal_arr).filter(function(a, b){return email.indexOf(b) !== -1}).length
+}
+
+App.prototype.checkRecipients = function(e) {
+  console.log('checkRecipients');
 
   var extenalEmails = [];
-  var internal = this.internal;
+  var internal_arr = this.internal_arr;
   var app = this;
+  var $recipientFields = $(_g.recipientWrap);
+  var noticeboxId = $recipientFields.parents(_g.replyArea).data('noticebox-id');
 
-  this.$recipientWrap = $(_g.recipientWrap);
-  this.replyArea = this.$recipientWrap.parents(_g.replyArea);
-  var noticeboxId = this.replyArea.data('noticebox-id');
-
-  console.log('noticeboxId:', noticeboxId);
-
-  $(_g.recipientWrap).each(function(i, wrap){
-    var $wrap, $email_els, $el, email;
-    $wrap = $(wrap);
-    $email_els = $wrap.find('[email]');
-
-    var $popupNewMessage = $(_g.popupNewMessage);
-    var popupNewMessage = $popupNewMessage.length && $popupNewMessage[0];
-    var isWrapInPopup = Util.isElementContrain(popupNewMessage, $wrap[0]);
+  $recipientFields.each(function(i, field){
+    var $field, $email_els, $el, email;
+    $field = $(field);
+    $email_els = $field.find('[email]');
 
     if($email_els.length){
-
       $email_els.each(function(i, el){
         $el = $(el);
         email = $el.attr('email');
-        if(email.indexOf(internal) === -1){
+        if(app.isExternal(email)){
           if(extenalEmails.indexOf(email) === -1){
             extenalEmails.push(email);
 
-            $el.find('.vM').off().on('click', function(e){
+            $el.find(_g.contactCloseButton).off().on('click', function(e){
               console.log('contact-cross.click');
-              app.checkRecipients(e, true);
+              app.checkRecipients(e);
             });
           }
         }
       });
-
-      if(e && isRemoveEmail){
-        var removeEmail = $(e.target).parents('.vN.Y7BVp[email]').attr('email');
-        extenalEmails.splice(extenalEmails.indexOf(removeEmail), 1);
-      }
-
     } else {
       if(e && e.target){
-        app.get(noticeboxId)
-          .hide();
+        app.getNoticeboxWithId(noticeboxId).hide();
       }
     }
   });
 
+  this.updateNoticeBox(noticeboxId, extenalEmails);
+}
+
+App.prototype.updateNoticeBox = function(id, extenalEmails) {
+  console.log('updateNoticeBox', extenalEmails);
   if(extenalEmails.length){
-    this.get(noticeboxId)
+    this.getNoticeboxWithId(id)
       .updateAndShow({
         email: extenalEmails
       });
   } else {
-    this.get(noticeboxId)
-      .hide();
+    this.getNoticeboxWithId(id).hide();
   }
 }
 
@@ -257,6 +250,7 @@ App.prototype.appendNoticBox = function() {
     }
   }, this));
 }
+
 App.prototype.updateStatus = function() {
   var app = this;
   var pageChecker = new onPageChecker();
@@ -273,7 +267,7 @@ App.prototype.updateStatus = function() {
       });
     })
     .keydown(function(e){
-      console.log('recipientInput.keypress');
+      console.log('recipientInput.keydown');
       setTimeout(function(){
         app.checkRecipients(e);
       })
@@ -289,7 +283,7 @@ App.prototype.updateStatus = function() {
 }
 
 App.prototype.setting = function(opts){
-  this.internal = opts.internal && opts.internal.split(',');
+  this.internal_arr = opts.internal_arr && opts.internal_arr.split(',');
 }
 
 $(document).ready(function(){
