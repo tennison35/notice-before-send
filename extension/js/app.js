@@ -189,41 +189,49 @@ App.prototype.isExternal = function(email) {
 
 App.prototype.checkRecipients = function(e) {
   console.log('checkRecipients');
+  var internal_arr, app;
 
-  var extenalEmails = [];
-  var internal_arr = this.internal_arr;
-  var app = this;
-  var $recipientFields = $(_g.recipientWrap);
-  var noticeboxId = $recipientFields.parents(_g.replyArea).data('noticebox-id');
+  internal_arr = this.internal_arr;
+  app = this;
 
-  $recipientFields.each(function(i, field){
-    var $field, $email_els, $el, email;
-    $field = $(field);
-    $email_els = $field.find('[email]');
+  $(_g.replyArea).each(function(i, area){
+    var extenalEmails, $area, noticeboxId, $recipientFields;
 
-    if($email_els.length){
-      $email_els.each(function(i, el){
-        $el = $(el);
-        email = $el.attr('email');
-        if(app.isExternal(email)){
-          if(extenalEmails.indexOf(email) === -1){
-            extenalEmails.push(email);
+    extenalEmails = [];
+    $area = $(area);
+    noticeboxId = $area.data('noticebox-id');
+    $recipientFields = $area.find(_g.recipientWrap);
 
-            $el.find(_g.contactCloseButton).off().on('click', function(e){
-              console.log('contact-cross.click');
-              app.checkRecipients(e);
-            });
+    $recipientFields.each(function(i, field){
+      var $field, $email_els, $el, email;
+
+      $field = $(field);
+      $email_els = $field.find('[email]');
+
+      if($email_els.length){
+        $email_els.each(function(i, el){
+          $el = $(el);
+          email = $el.attr('email');
+          if(app.isExternal(email)){
+            if(extenalEmails.indexOf(email) === -1){
+              extenalEmails.push(email);
+
+              $el.find(_g.contactCloseButton).off().on('click', function(e){
+                console.log('contact-cross.click');
+                app.checkRecipients(e);
+              });
+            }
           }
+        });
+      } else {
+        if(e && e.target){
+          app.getNoticeboxWithId(noticeboxId).hide();
         }
-      });
-    } else {
-      if(e && e.target){
-        app.getNoticeboxWithId(noticeboxId).hide();
       }
-    }
-  });
+    });
 
-  this.updateNoticeBox(noticeboxId, extenalEmails);
+    app.updateNoticeBox(noticeboxId, extenalEmails);
+  })
 };
 
 App.prototype.updateNoticeBox = function(id, extenalEmails) {
