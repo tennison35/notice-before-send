@@ -2,11 +2,12 @@ var _g = {
   'recipientWrapActive': '.wO.nr.l1',
   'recipientWrap': '.wO.nr',
   'recipientInput': 'textarea.vO',
-  'lightboxWrap': '.ah.aiv.aJS',
-  'lightboxWrapClass': 'ah aiv aJS',
+  'listboxWrap': '.ah.aiv.aJS',
+  'listboxWrapClass': 'ah aiv aJS',
   'contactHighlighted': '.Jd-Je.Je',
   'contactHighlightedClass': 'Jd-Je Je',
   'contact': '.Jd-axF',
+  'contactClass': 'Jd-axF',
   'contactLowerText': '.Sr',
   'contactUpperText': '.am',
   'contactCloseButton': '.vM',
@@ -44,6 +45,9 @@ var Util = {
     this.list.push(text);
 
     return text;
+  },
+  isDisplay: function(el) {
+    return el && $(el).css('display') !== "none";
   }
 };
 
@@ -189,10 +193,7 @@ App.prototype.isExternal = function(email) {
 
 App.prototype.checkRecipients = function(e) {
   console.log('checkRecipients');
-  var internal_arr, app;
-
-  internal_arr = this.internal_arr;
-  app = this;
+  var app = this;
 
   $(_g.replyArea).each(function(i, area){
     var extenalEmails, $area, noticeboxId, $recipientFields;
@@ -261,12 +262,34 @@ App.prototype.appendNoticBox = function() {
   }, this));
 };
 
-App.prototype.updateStatus = function() {
-  var app = this;
-  var pageChecker = new onPageChecker();
-  var popupChecker = new PopupChecker();
+App.prototype.suppressEventOnListbox = function(e) {
+  var app = this,
+      $contactsHighlighted = $(_g.contactHighlighted);
 
-  this.appendNoticBox();
+  $contactsHighlighted.each(function(i, contactHighlighted){
+    var $contactHighlighted = $(contactHighlighted),
+        $listboxWrap = $contactHighlighted.parents(_g.listboxWrap),
+        isDisplay = Util.isDisplay($listboxWrap),
+        email = $contactHighlighted.find('.Sr').text();
+
+    if(isDisplay && $contactHighlighted && email && app.isExternal(email)){
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  });
+}
+
+App.prototype.setupListener = function() {
+  var app = this;
+
+  $(_g.contact)
+    .off()
+    .on({
+      click: function(e){
+        console.log('User clicked contact in listbox.\nSuppressing the click event.');
+        app.suppressEventOnListbox(e);
+      }
+    });
 
   $(_g.recipientInput)
     .off()
@@ -278,19 +301,70 @@ App.prototype.updateStatus = function() {
     })
     .keydown(function(e){
       console.log('recipientInput.keydown');
+
+      if(e.which === 13){
+        app.suppressEventOnListbox(e);
+      }
+
       setTimeout(function(){
         app.checkRecipients(e);
       });
     });
+}
 
-  if(pageChecker.isReply() && !pageChecker.isReplyBoxActive() ||
-    popupChecker.isMaximized() ){
-      this.checkRecipients();
-  } else if(popupChecker.isReplyBoxActive() ||
-    pageChecker.isReplyBoxActive() ){
-      this.checkRecipients();
+App.prototype.updateStatus = function() {
+  var app = this,
+      pageChecker = new onPageChecker(),
+      popupChecker = new PopupChecker();
+
+  this.appendNoticBox();
+  this.setupListener();
+  this.observeDOM( document.getElementsByTagName('body')[0] ,function(mutation){
+    var $target = $(mutation.addedNodes),
+        hasClass = $target.hasClass(_g.contactClass);
+
+    if(hasClass){
+      var $contact = $target,
+          email = $contact.find(_g.contactLowerText).text();
+
+      if(app.isExternal(email)){
+        $target.addClass('nbs-excluder');
+      }
+    }
+  });
+
+  if(pageChecker.isReply() && !pageChecker.isReplyBoxActive() || popupChecker.isMaximized() ){
+    this.checkRecipients();
+  } else if(popupChecker.isReplyBoxActive() || pageChecker.isReplyBoxActive() ){
+    this.checkRecipients();
   }
 };
+
+App.prototype.observeDOM = (function(){
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver,
+        eventListenerSupported = window.addEventListener;
+
+    return function(el, callback){
+        if( MutationObserver ){
+            // define a new observer
+            var obs = new MutationObserver(function(mutations, observer){
+              mutations.forEach(function(mutation) {
+                if( mutation.addedNodes.length)
+                  callback(mutation);
+              });
+            });
+            // have the observer observe foo for changes in children
+            obs.observe( el, { childList:true, subtree:true });
+        }
+        else if( eventListenerSupported ){
+            el.addEventListener('DOMNodeInserted', callback, false);
+            el.addEventListener('DOMNodeRemoved', callback, false);
+        }
+        else {
+          console.error('Both MutationObserver and eventListenerSupported are not supported.');
+        }
+    }
+})();
 
 App.prototype.setting = function(opts){
   this.internal_arr = opts.internal_arr && opts.internal_arr.split(',');
