@@ -232,7 +232,7 @@ App.prototype.checkRecipients = function(e) {
     });
 
     app.updateNoticeBox(noticeboxId, extenalEmails);
-  })
+  });
 };
 
 App.prototype.updateNoticeBox = function(id, extenalEmails) {
@@ -277,7 +277,7 @@ App.prototype.suppressEventOnListbox = function(e) {
       e.preventDefault();
     }
   });
-}
+};
 
 App.prototype.setupListener = function() {
   var app = this;
@@ -310,7 +310,7 @@ App.prototype.setupListener = function() {
         app.checkRecipients(e);
       });
     });
-}
+};
 
 App.prototype.updateStatus = function() {
   var app = this,
@@ -363,7 +363,7 @@ App.prototype.observeDOM = (function(){
         else {
           console.error('Both MutationObserver and eventListenerSupported are not supported.');
         }
-    }
+    };
 })();
 
 App.prototype.setting = function(opts){
