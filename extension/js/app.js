@@ -1,4 +1,5 @@
 var _g = {
+  'excluderClass': 'nbs-excluder',
   'recipientWrapActive': '.wO.nr.l1',
   'recipientWrap': '.wO.nr',
   'recipientInput': 'textarea.vO',
@@ -270,9 +271,10 @@ App.prototype.suppressEventOnListbox = function(e) {
     var $contactHighlighted = $(contactHighlighted),
         $listboxWrap = $contactHighlighted.parents(_g.listboxWrap),
         isDisplay = Util.isDisplay($listboxWrap),
-        email = $contactHighlighted.find('.Sr').text();
+        hasExcluderClass = $contactHighlighted.hasClass(_g.excluderClass);
+        email = $contactHighlighted.find(_g.contactLowerText).text();
 
-    if(isDisplay && $contactHighlighted && email && app.isExternal(email)){
+    if(isDisplay && $contactHighlighted && email && hasExcluderClass){
       e.stopPropagation();
       e.preventDefault();
     }
@@ -281,15 +283,6 @@ App.prototype.suppressEventOnListbox = function(e) {
 
 App.prototype.setupListener = function() {
   var app = this;
-
-  $(_g.contact)
-    .off()
-    .on({
-      click: function(e){
-        console.log('User clicked contact in listbox.\nSuppressing the click event.');
-        app.suppressEventOnListbox(e);
-      }
-    });
 
   $(_g.recipientInput)
     .off()
@@ -310,6 +303,35 @@ App.prototype.setupListener = function() {
         app.checkRecipients(e);
       });
     });
+
+  this.observeDOM( document.getElementsByTagName('body')[0] ,function(mutation){
+    var $target = $(mutation.addedNodes),
+        hasClass = $target.hasClass(_g.contactClass);
+
+    if(hasClass){
+      var email = $target.find(_g.contactLowerText).text();
+
+      $target
+        .off()
+        .on({
+          click: function(e){
+            console.log(1010);
+            console.log('User clicked contact in listbox.\nSuppressing the click event.');
+            app.suppressEventOnListbox(e);
+          },
+          dblclick: function(e){
+            console.log(2020);
+            var $target = $(e.target);
+            $target.parents(_g.contact).removeClass(_g.excluderClass);
+          }
+        });
+
+      if(app.isExternal(email)){
+        $target.addClass(_g.excluderClass);
+      }
+    }
+  });
+
 };
 
 App.prototype.updateStatus = function() {
@@ -319,19 +341,6 @@ App.prototype.updateStatus = function() {
 
   this.appendNoticBox();
   this.setupListener();
-  this.observeDOM( document.getElementsByTagName('body')[0] ,function(mutation){
-    var $target = $(mutation.addedNodes),
-        hasClass = $target.hasClass(_g.contactClass);
-
-    if(hasClass){
-      var $contact = $target,
-          email = $contact.find(_g.contactLowerText).text();
-
-      if(app.isExternal(email)){
-        $target.addClass('nbs-excluder');
-      }
-    }
-  });
 
   if(pageChecker.isReply() && !pageChecker.isReplyBoxActive() || popupChecker.isMaximized() ){
     this.checkRecipients();
