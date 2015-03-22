@@ -356,27 +356,6 @@ App.prototype.onDOMAddListbox = function (mutation) {
   }
 }
 
-// var oldAddEventListener = EventTarget.prototype.addEventListener;
-// EventTarget.prototype.addEventListener = function(eventName, eventHandler)
-// {
-//   if(eventName === 'keydown'){
-//     console.log('eventName:', eventName);
-//   }
-
-//   oldAddEventListener.call(this, eventName, function(event) {
-//     eventHandler(event);
-//   });
-// };
-
-var oldDispatchEvent = EventTarget.prototype.dispatchEvent;
-EventTarget.prototype.dispatchEvent = function(e)
-{
-  console.log('dispatchEvent:', e);
-
-  oldDispatchEvent.call(this, e);
-};
-
-
 App.prototype.setupListener = function() {
   var app = this;
 
