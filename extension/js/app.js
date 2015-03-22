@@ -107,8 +107,10 @@ NoticeBox.prototype.setType = function(isPopup){
   this.$el.attr('data-isPopup', isPopup);
 };
 NoticeBox.prototype.hide = function(){
-  console.log('noticebox id: '+this.id+' is hidden.');
-  this.$el.hide();
+  if(Util.isDisplay(this.$el)){
+    console.log('noticebox id: '+this.id+' is hidden.');
+    this.$el.hide();
+  }
 };
 NoticeBox.prototype.updateAndShow = function(data){
   this.updateText(data);
@@ -116,8 +118,10 @@ NoticeBox.prototype.updateAndShow = function(data){
 };
 
 NoticeBox.prototype.show = function(){
-  console.log('noticebox id: '+this.id+' is shown.');
-  this.$el.show();
+  if(!Util.isDisplay(this.$el)){
+    console.log('noticebox id: '+this.id+' is shown.');
+    this.$el.show();
+  }
 };
 NoticeBox.prototype.updateText = function(data){
   this.$el.text('External Recipients: ' + data.email.join(', '));
@@ -202,7 +206,6 @@ var App = function() {
   window.onhashchange = $.proxy(this.updateStatus, this);
 
   setInterval($.proxy(function(){
-    console.log('App.updateStatus');
     this.updateStatus();
   }, this), 3*1000);
 };
@@ -216,7 +219,6 @@ App.prototype.isExternal = function(email) {
 };
 
 App.prototype.checkRecipients = function(e) {
-  console.log('checkRecipients');
   var app = this;
 
   $(_g.replyArea).each(function(i, area){
@@ -260,7 +262,6 @@ App.prototype.checkRecipients = function(e) {
 };
 
 App.prototype.updateNoticeBox = function(id, extenalEmails) {
-  console.log('updateNoticeBox', extenalEmails);
   if(extenalEmails.length){
     this.getNoticeboxWithId(id)
       .updateAndShow({
