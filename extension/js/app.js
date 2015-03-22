@@ -52,6 +52,29 @@ var Util = {
   }
 };
 
+$.fn.once = function (id) {
+  if(typeof id !== 'string') return false;
+  var name = "jquery-once-" + id;
+
+  return this.filter(function() {
+    return $(this).data(name) !== true;
+  }).data(name, true);
+};
+
+$.fn.removeOnce = function (id) {
+  if(typeof id !== 'string') return false;
+  return this.findOnce(id).removeData("jquery-once-" + id);
+};
+
+$.fn.findOnce = function (id) {
+  if(typeof id !== 'string') return false;
+  var name = "jquery-once-" + id;
+
+  return this.filter(function() {
+    return $(this).data(name) === true;
+  });
+};
+
 var NoticeBox = function (parent, isPopup) {
   this.classes = ['noticebox', 'alert', 'alert-danger'];
 
@@ -275,63 +298,115 @@ App.prototype.suppressEventOnListbox = function(e) {
         email = $contactHighlighted.find(_g.contactLowerText).text();
 
     if(isDisplay && $contactHighlighted && email && hasExcluderClass){
+      // e.stopImmediatePropagation() does not work, but event.stopImmediatePropagation() works ?!
+      event.stopImmediatePropagation();
       e.stopPropagation();
       e.preventDefault();
     }
   });
 };
 
+App.prototype.onDOMAddContacts = function(mutation) {
+  var app = this,
+      $target = $(mutation.addedNodes),
+      hasClass = $target.hasClass(_g.contactClass);
+
+  if(hasClass){
+    var email = $target.find(_g.contactLowerText).text();
+
+    $target
+      .once('addEventListener')
+      .on({
+        click: function(e){
+          console.log('User clicked contact in listbox.\nSuppressing the click event.');
+          app.suppressEventOnListbox(e);
+        },
+        dblclick: function(e){
+          var $target = $(e.target);
+          $target.parents(_g.contact).removeClass(_g.excluderClass);
+        }
+      });
+
+    if(app.isExternal(email)){
+      $target.addClass(_g.excluderClass);
+    }
+  }
+}
+
+App.prototype.onDOMAddListbox = function (mutation) {
+  var app = this,
+      $target = $(mutation.addedNodes),
+      hasClass = $target.hasClass(_g.listboxWrapClass);
+
+  if(hasClass){
+    $target
+      .once('addEventListener')
+      .on({
+        keydown: function(e){
+          stopTab(e);
+        },
+        keypress: function(e){
+          stopTab(e);
+        },
+        keyup: function(e){
+          stopTab(e);
+        }
+      });
+  }
+}
+
+// var oldAddEventListener = EventTarget.prototype.addEventListener;
+// EventTarget.prototype.addEventListener = function(eventName, eventHandler)
+// {
+//   if(eventName === 'keydown'){
+//     console.log('eventName:', eventName);
+//   }
+
+//   oldAddEventListener.call(this, eventName, function(event) {
+//     eventHandler(event);
+//   });
+// };
+
+var oldDispatchEvent = EventTarget.prototype.dispatchEvent;
+EventTarget.prototype.dispatchEvent = function(e)
+{
+  console.log('dispatchEvent:', e);
+
+  oldDispatchEvent.call(this, e);
+};
+
+
 App.prototype.setupListener = function() {
   var app = this;
 
   $(_g.recipientInput)
-    .off()
-    .focus(function(e){
-      console.log('recipientInput.focus');
-      setTimeout(function(){
-        app.checkRecipients(e);
-      });
-    })
-    .keydown(function(e){
-      console.log('recipientInput.keydown');
+    .once('addEventListener')
+    .on({
+      keydown: function(e) {
+        if(e.keyCode === 13 || e.keyCode === 9){
+          console.log('recipientInput.keydown:', e.keyCode);
+          app.suppressEventOnListbox(e);
+        }
 
-      if(e.which === 13){
-        app.suppressEventOnListbox(e);
+        setTimeout(function(){
+          app.checkRecipients(e);
+        });
+      },
+      focus: function(e){
+        console.log('recipientInput.focus');
+        setTimeout(function(){
+          app.checkRecipients(e);
+        });
       }
-
-      setTimeout(function(){
-        app.checkRecipients(e);
-      });
     });
 
-  this.observeDOM( document.getElementsByTagName('body')[0] ,function(mutation){
-    var $target = $(mutation.addedNodes),
-        hasClass = $target.hasClass(_g.contactClass);
-
-    if(hasClass){
-      var email = $target.find(_g.contactLowerText).text();
-
-      $target
-        .off()
-        .on({
-          click: function(e){
-            console.log(1010);
-            console.log('User clicked contact in listbox.\nSuppressing the click event.');
-            app.suppressEventOnListbox(e);
-          },
-          dblclick: function(e){
-            console.log(2020);
-            var $target = $(e.target);
-            $target.parents(_g.contact).removeClass(_g.excluderClass);
-          }
-        });
-
-      if(app.isExternal(email)){
-        $target.addClass(_g.excluderClass);
-      }
+    if(!app.isSet){
+      this.observeDOM( document.getElementsByTagName('body')[0] ,function(mutation){
+        app.isSet = true;
+        app.onDOMAddContacts(mutation);
+        app.onDOMAddListbox(mutation);
+      });
     }
-  });
-
 };
 
 App.prototype.updateStatus = function() {
