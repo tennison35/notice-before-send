@@ -295,7 +295,7 @@ App.prototype.suppressEventOnListbox = function(e) {
     var $contactHighlighted = $(contactHighlighted),
         $listboxWrap = $contactHighlighted.parents(_g.listboxWrap),
         isDisplay = Util.isDisplay($listboxWrap),
-        hasExcluderClass = $contactHighlighted.hasClass(_g.excluderClass);
+        hasExcluderClass = $contactHighlighted.hasClass(_g.excluderClass),
         email = $contactHighlighted.find(_g.contactLowerText).text();
 
     if(isDisplay && $contactHighlighted && email && hasExcluderClass){
@@ -332,7 +332,7 @@ App.prototype.onDOMAddContacts = function(mutation) {
       $target.addClass(_g.excluderClass);
     }
   }
-}
+};
 
 App.prototype.onDOMAddListbox = function (mutation) {
   var app = this,
@@ -340,21 +340,9 @@ App.prototype.onDOMAddListbox = function (mutation) {
       hasClass = $target.hasClass(_g.listboxWrapClass);
 
   if(hasClass){
-    $target
-      .once('addEventListener')
-      .on({
-        keydown: function(e){
-          stopTab(e);
-        },
-        keypress: function(e){
-          stopTab(e);
-        },
-        keyup: function(e){
-          stopTab(e);
-        }
-      });
+    // if user set to disable "Conside Including" features, hide the Listbox
   }
-}
+};
 
 App.prototype.setupListener = function() {
   var app = this;
