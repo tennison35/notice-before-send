@@ -12,13 +12,17 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-mocha');
 
   grunt.initConfig({
-    pkg: grunt.file.readJSON('package.json'),
-    manifest: grunt.file.readJSON('extension/manifest.json'),
+    pkg: 'package.json',
+    manifest: 'manifest.json',
+    testFolder: 'test',
+    src: 'extension',
+    dest: 'ext',
+    tmp: '.tmp',
 
-    clean: [ '.tmp' ],
+    clean: [ '<%=tmp %>' ],
 
     jshint: {
-      files: ['Gruntfile.js', 'extension/js/**/*.js', '!extension/js/jquery.js' ],
+      files: ['Gruntfile.js', '<%=src %>/js/**/*.js', '!<%=src %>/js/jquery.js' ],
       options: {
         curly: false,
         eqeqeq: true,
@@ -49,8 +53,16 @@ module.exports = function (grunt) {
     },
 
     mocha: {
-      test: {
-        src: ['tests/**/*.html'],
+      all: {
+        src: [
+          // 'test/onPageMessagePage-noReply-notActive-noContact.html',
+          '<%=testFolder %>/test.html',
+        ],
+        options: {
+          reporter: 'Spec',
+          run: true,
+          log: true
+        },
       },
     },
 
@@ -58,8 +70,8 @@ module.exports = function (grunt) {
       copy_assets: {
         expand: true,
         flatten: true,
-        src: [ 'extension/assets/*.png' ],
-        dest: 'ext/assets'
+        src: [ '<%=src %>/assets/*.png' ],
+        dest: '<%=dest %>/assets'
       }
     },
 
@@ -72,7 +84,7 @@ module.exports = function (grunt) {
           }
         },
         files: {
-          'ext/nbs.js': [ '.tmp/nbs.js' ]
+          '<%=dest %>/nbs.js': [ '<%=tmp %>/nbs.js' ]
         }
       }
     },
@@ -80,7 +92,7 @@ module.exports = function (grunt) {
     concat: {
       basic_and_extras: {
         files: {
-          '.tmp/nbs.js': [ 'extension/js/jquery.js', 'extension/js/app.js' ],
+          '<%=tmp %>/nbs.js': [ '<%=src %>/js/jquery.js', '<%=src %>/js/app.js' ],
         }
       },
     },
@@ -90,32 +102,29 @@ module.exports = function (grunt) {
         expand: true,
         flatten: true,
         files: {
-          'ext/nbs.css' : 'extension/css/*.css'
+          '<%=dest %>/nbs.css' : '<%=src %>/css/*.css'
         }
-      }
-    },
-
-    imagemin: {
-      png: {
-        options: {
-          optimizationLevel: 7
-        },
-        files: [
-          {
-            expand: true,
-            cwd: './assets/',
-            src: ['**/*.png'],
-            dest: './ext/assets/',
-            ext: '.png'
-          }
-        ]
       }
     }
   });
 
+  grunt.registerTask('updateRev', function (key, value) {
+    var manifestPath = grunt.config.get('src') + '/' + grunt.config.get('manifest');
+    var pkgPath = grunt.config.get('pkg');
+    var manifest = grunt.file.readJSON( manifestPath );
+    var pkg = grunt.file.readJSON( pkgPath );
+
+    var verison = manifest.version;
+    grunt.config('verison', verison);
+
+    pkg.version = verison;
+
+    grunt.file.write(pkgPath, JSON.stringify(pkg, null, 2));
+  });
+
   grunt.registerTask('updateManifest', function (key, value) {
-    var src = 'extension/manifest.json';
-    var dest = 'ext/manifest.json';
+    var src = grunt.config.get('src') + '/' + grunt.config.get('manifest');
+    var dest = grunt.config.get('dest') + '/' + grunt.config.get('manifest');
 
     if (!grunt.file.exists(src)) {
       grunt.log.error("file " + src + " not found");
@@ -138,14 +147,13 @@ module.exports = function (grunt) {
 
   grunt.registerTask('default',
     [
-      // Test
-      'jshint', 'mocha',
       // Arrange
       'copy', 'concat',
       // Minify
       'uglify', 'cssmin',
       //Build
       'updateManifest',
+      'updateRev',
       'clean'
     ]);
 };

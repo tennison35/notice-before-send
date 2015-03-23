@@ -96,3 +96,8 @@
 .alert-danger .alert-link {
   color: #843534
 }
+
+.nbs-excluder {
+  /*pointer-events: none;*/
+  opacity: 0.3;
+}
