@@ -3,6 +3,7 @@ var _g = {
   'recipientWrapActive': '.wO.nr.l1',
   'recipientWrap': '.wO.nr',
   'recipientInput': 'textarea.vO',
+  'recipientInputClass': 'vO',
   'listboxWrap': '.ah.aiv.aJS',
   'listboxWrapClass': 'ah aiv aJS',
   'contactHighlighted': '.Jd-Je.Je',
@@ -199,11 +200,19 @@ PopupChecker.prototype.isReplyBoxActive = function() {
 };
 
 var App = function() {
+  var app = this;
+
   console.log('App.init');
   this.internal_arr = ['alphasights'];
   this.noticeboxes = [];
 
   window.onhashchange = $.proxy(this.updateStatus, this);
+
+  this.observeDOM( document.getElementsByTagName('body')[0] ,function(mutation){
+    app.onDOMAddContacts(mutation);
+    app.onDOMAddListbox(mutation);
+    app.onDOMRecipientInput(mutation);
+  });
 
   setInterval($.proxy(function(){
     this.updateStatus();
@@ -344,15 +353,19 @@ App.prototype.onDOMAddListbox = function (mutation) {
   }
 };
 
-App.prototype.setupListener = function() {
-  var app = this;
+App.prototype.onDOMRecipientInput = function (mutation) {
+  var app = this,
+      $target = $(mutation.addedNodes),
+      hasClass = $target.hasClass(_g.recipientInputClass),
+      isTextArea = $target.is('textarea');
 
-  $(_g.recipientInput)
+  if(hasClass && isTextArea){
+    console.log('recipientInput:', $target);
+    $target
     .once('addEventListener')
     .on({
       keydown: function(e) {
         if(e.keyCode === 13 || e.keyCode === 9){
-          console.log('recipientInput.keydown:', e.keyCode);
           app.suppressEventOnListbox(e);
         }
 
@@ -367,14 +380,7 @@ App.prototype.setupListener = function() {
         });
       }
     });
-
-    if(!app.isSet){
-      this.observeDOM( document.getElementsByTagName('body')[0] ,function(mutation){
-        app.isSet = true;
-        app.onDOMAddContacts(mutation);
-        app.onDOMAddListbox(mutation);
-      });
-    }
+  }
 };
 
 App.prototype.updateStatus = function() {

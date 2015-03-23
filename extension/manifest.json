@@ -7,7 +7,7 @@
       "js": [ "js/jquery.js", "js/app.js" ],
       "css": [ "css/notice.css" ],
       "matches": [ "http://mail.google.com/*", "https://mail.google.com/*" ],
-      "run_at": "document_end"
+      "run_at": "document_start"
    } ],
    "icons": {
       "16": "assets/icon16.png",
