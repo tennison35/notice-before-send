@@ -389,7 +389,6 @@ App.prototype.updateStatus = function() {
       popupChecker = new PopupChecker();
 
   this.appendNoticBox();
-  this.setupListener();
 
   if(pageChecker.isReply() && !pageChecker.isReplyBoxActive() || popupChecker.isMaximized() ){
     this.checkRecipients();
