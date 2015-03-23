@@ -1,6 +1,6 @@
 {
    "name": "Notice Before Send",
-   "version": "0.1.0",
+   "version": "0.1.1",
    "description": "Notice before you send email to external parties in Gmail :)",
    "manifest_version": 2,
    "content_scripts": [ {
