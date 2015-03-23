@@ -2,6 +2,7 @@
   "name": "NoticeBeforeSend",
   "version": "0.0.5",
   "devDependencies": {
+    "chai": "~1.8.1",
     "grunt": "^0.4.5",
     "grunt-chrome-extension-reload": "~0.2.6",
     "grunt-cli": "~ 0.1.11",
@@ -14,8 +15,8 @@
     "grunt-contrib-uglify": "~ 0.2.7",
     "grunt-filerev": "^2.1.2",
     "grunt-mocha": "~0.4.0",
+    "grunt-zip": "^0.16.2",
     "mocha": "~1.14.0",
-    "chai": "~1.8.1",
     "phantom": "^0.7.2"
   }
 }

@@ -10,6 +10,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-obfuscator');
   grunt.loadNpmTasks('grunt-mocha');
+  grunt.loadNpmTasks('grunt-zip');
 
   grunt.initConfig({
     pkg: 'package.json',
@@ -18,6 +19,7 @@ module.exports = function (grunt) {
     src: 'extension',
     dest: 'ext',
     tmp: '.tmp',
+    builds: 'builds',
 
     clean: [ '<%=tmp %>' ],
 
@@ -105,6 +107,10 @@ module.exports = function (grunt) {
           '<%=dest %>/nbs.css' : '<%=src %>/css/*.css'
         }
       }
+    },
+
+    zip: {
+      '<%=builds %>/build-<%=verison %>.zip': [ '<%=dest %>/**' ]
     }
   });
 
@@ -144,6 +150,7 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('test', [ 'jshint', 'mocha' ]);
+  grunt.registerTask('pack', [ 'updateRev', 'zip' ]);
 
   grunt.registerTask('default',
     [
@@ -154,6 +161,7 @@ module.exports = function (grunt) {
       //Build
       'updateManifest',
       'updateRev',
+      'zip',
       'clean'
     ]);
 };
