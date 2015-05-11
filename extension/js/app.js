@@ -304,10 +304,9 @@ App.prototype.suppressEventOnListbox = function(e) {
     var $contactHighlighted = $(contactHighlighted),
         $listboxWrap = $contactHighlighted.parents(_g.listboxWrap),
         isDisplay = Util.isDisplay($listboxWrap),
-        hasExcluderClass = $contactHighlighted.hasClass(_g.excluderClass),
-        email = $contactHighlighted.find(_g.contactLowerText).text();
+        hasExcluderClass = $contactHighlighted.hasClass(_g.excluderClass);
 
-    if(isDisplay && $contactHighlighted && email && hasExcluderClass){
+    if(isDisplay && $contactHighlighted && hasExcluderClass){
       // e.stopImmediatePropagation() does not work, but event.stopImmediatePropagation() works ?!
       event.stopImmediatePropagation();
       e.stopPropagation();
