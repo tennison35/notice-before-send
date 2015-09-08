@@ -11,16 +11,19 @@
 .noticebox:hover {
   opacity: 0.3;
 }
-
+.noticebox.hover {
+  opacity: 0.3;
+  pointer-events: none;
+}
 .aaZ {
   overflow: visible !important;
 }
+
+/*
+  For noticebox on popup new message tab
+*/
 .AD .aoI .noticebox{
   top: -39px;
-  left: 0;
-  right: 0;
-  width: auto;
-  transform: translateY(-100%);
   z-index: 99999999999;
 }
 .alert {

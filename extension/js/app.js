@@ -99,6 +99,16 @@ NoticeBox.prototype.create = function () {
     class: this.classes.join(' ')
   });
 
+  this.$el
+    .mouseover(function(){
+      var $el = $(this);
+      $el.addClass("hover");
+
+      setTimeout(function(){
+        $el.removeClass("hover");
+      }, 5000);
+    });
+
   return this.$el;
 };
 
