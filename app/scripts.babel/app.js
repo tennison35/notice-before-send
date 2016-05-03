@@ -35,8 +35,8 @@ var Util = {
   },
   genId: function (digit) {
     digit = digit || 10;
-    var text = "", i, len, possible;
-    possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var text = '', i, len, possible;
+    possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
     do {
       for (i = 0, len = possible.length; i < digit; i ++ ){
@@ -49,13 +49,13 @@ var Util = {
     return text;
   },
   isDisplay: function(el) {
-    return el && $(el).css('display') !== "none";
+    return el && $(el).css('display') !== 'none';
   }
 };
 
 $.fn.once = function (id) {
   if(typeof id !== 'string') return false;
-  var name = "jquery-once-" + id;
+  var name = 'jquery-once-' + id;
 
   return this.filter(function() {
     return $(this).data(name) !== true;
@@ -64,12 +64,12 @@ $.fn.once = function (id) {
 
 $.fn.removeOnce = function (id) {
   if(typeof id !== 'string') return false;
-  return this.findOnce(id).removeData("jquery-once-" + id);
+  return this.findOnce(id).removeData('jquery-once-' + id);
 };
 
 $.fn.findOnce = function (id) {
   if(typeof id !== 'string') return false;
-  var name = "jquery-once-" + id;
+  var name = 'jquery-once-' + id;
 
   return this.filter(function() {
     return $(this).data(name) === true;
@@ -102,10 +102,10 @@ NoticeBox.prototype.create = function () {
   this.$el
     .mouseover(function(){
       var $el = $(this);
-      $el.addClass("hover");
+      $el.addClass('hover');
 
       setTimeout(function(){
-        $el.removeClass("hover");
+        $el.removeClass('hover');
       }, 5000);
     });
 
@@ -139,7 +139,7 @@ NoticeBox.prototype.updateText = function(data){
 };
 
 function onPageChecker () {
-  this.type = "onpage";
+  this.type = 'onpage';
   this.hash_arr = window.location.hash.split(/#([^?/]+)?\/?([^/?]+)?\??([^&]+)?/);
   this.$noReply = $(_g.noReply);
   this.$replyBox = $(_g.replyBox);
@@ -163,13 +163,13 @@ onPageChecker.prototype.isActive = function() {
 };
 onPageChecker.prototype.isReply = function() {
   var isNoReplyFound = !!this.$noReply.length;
-  var isNoReplyDisplay = this.$noReply.css('display') !== "none";
+  var isNoReplyDisplay = this.$noReply.css('display') !== 'none';
 
   return (!!this.id && !isNoReplyFound && !!isNoReplyDisplay) || false;
 };
 onPageChecker.prototype.isReplyBoxActive = function() {
   var isReplyBoxFound = !!this.$replyBox.length;
-  var isReplyBoxDisplay = (this.$replyBox.css('display') !== "none");
+  var isReplyBoxDisplay = (this.$replyBox.css('display') !== 'none');
 
   return (this.isReply() && isReplyBoxFound && isReplyBoxDisplay) || false;
 };
@@ -182,7 +182,7 @@ function PopupChecker () {
 
   this.setID(this.popupStatus_arr[1] || null);
 
-  this.type = "popup";
+  this.type = 'popup';
 }
 PopupChecker.prototype.setID = function(id) {
   this.id = id;
@@ -200,12 +200,12 @@ PopupChecker.prototype.isActive = function() {
   return !!isPopupMessage || false;
 };
 PopupChecker.prototype.isMaximized = function() {
-  var isTopRightMinimizeButton = (this.$topRightMiniBtn.data('tooltip') === "Minimize");
+  var isTopRightMinimizeButton = (this.$topRightMiniBtn.data('tooltip') === 'Minimize');
 
   return isTopRightMinimizeButton || false;
 };
 PopupChecker.prototype.isReplyBoxActive = function() {
-  var isPopupMessageReplyBoxDisplay = (this.$popupMessageReplyBox.css('display') !== "none");
+  var isPopupMessageReplyBoxDisplay = (this.$popupMessageReplyBox.css('display') !== 'none');
   return this.isMaximized() && this.$popupMessageReplyBox && isPopupMessageReplyBoxDisplay || false;
 };
 
@@ -358,7 +358,7 @@ App.prototype.onDOMAddListbox = function (mutation) {
       hasClass = $target.hasClass(_g.listboxWrapClass);
 
   if(hasClass){
-    // if user set to disable "Conside Including" features, hide the Listbox
+    // if user set to disable 'Conside Including' features, hide the Listbox
   }
 };
 
