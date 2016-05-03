@@ -1,25 +1,11 @@
-var expect = chai.expect;
-var assert = chai.assert;
-var nbs;
+(function () {
+  'use strict';
 
-describe('onPageMessage', function(){
-
-  describe('# Check Replay', function(){
-
-    describe('# Check if ReplayBox is active', function(){
-
-      before(function() {
-        nbs = new NBS();
-      });
-
-      it('checkStatus function should return an obj', function(){
-        expect(nbs).to.have.property('checkStatus');
-
+  describe('Give it some context', function () {
+    describe('maybe a bit more context here', function () {
+      it('should run here few assertions', function () {
 
       });
-
     });
-
   });
-
-});
+})();
