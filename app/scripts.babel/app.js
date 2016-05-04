@@ -209,11 +209,11 @@ PopupChecker.prototype.isReplyBoxActive = function() {
   return this.isMaximized() && this.$popupMessageReplyBox && isPopupMessageReplyBoxDisplay || false;
 };
 
-var App = function() {
+var App = function(config) {
   var app = this;
 
   console.log('App.init');
-  this.internal_arr = ['alphasights'];
+  this.internal_arr = config.includeDomain.split(/,\s*/);
   this.noticeboxes = [];
 
   window.onhashchange = $.proxy(this.updateStatus, this);
@@ -234,7 +234,7 @@ App.prototype.getNoticeboxWithId = function(noticeboxId){
 };
 
 App.prototype.isExternal = function(email) {
-  return !$(this.internal_arr).filter(function(a, b){return email.indexOf(b) !== -1;}).length;
+  return !$(this.internal_arr).filter(function(_, included){return email.indexOf(included) !== -1;}).length;
 };
 
 App.prototype.checkRecipients = function(e) {
@@ -331,7 +331,7 @@ App.prototype.onDOMAddContacts = function(mutation) {
       hasClass = $target.hasClass(_g.contactClass);
 
   if(hasClass){
-    var email = $target.find(_g.contactLowerText).text();
+    var email = $target.find(_g.contactLowerText).text() || $target.find(_g.contactUpperText).text();
 
     $target
       .once('addEventListener')
@@ -433,9 +433,17 @@ App.prototype.observeDOM = (function(){
 })();
 
 App.prototype.setting = function(opts){
-  this.internal_arr = opts.internal_arr && opts.internal_arr.split(',');
+  this.internal_arr = opts.internal_arr && opts.internal_arr.split(/,\s*/);
 };
 
+
 $(document).ready(function(){
-  window.noticeBeforeSend = new App();
+  var defaultConfig = {
+    includeDomain: 'gmail.com',
+    excludeDomain: 'hotmail.com,aol.com'
+  };
+
+  chrome.storage.sync.get(defaultConfig, function(config) {
+    window.noticeBeforeSend = new App(config);
+  });
 });
