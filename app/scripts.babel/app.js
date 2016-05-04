@@ -76,6 +76,37 @@ $.fn.findOnce = function (id) {
   });
 };
 
+var Style = function() {
+  this.sheet = this.createSheet();
+
+  return this;
+}
+
+Style.prototype.createSheet = function() {
+	var style = document.createElement('style');
+	// Add a media (and/or media query) here if you'd like!
+	// style.setAttribute('media', 'screen')
+	// style.setAttribute('media', 'only screen and (max-width : 1024px)')
+
+	// WebKit hack :(
+	style.appendChild(document.createTextNode(''));
+
+	// Add the <style> element to the page
+	document.head.appendChild(style);
+
+	return style.sheet;
+};
+
+Style.prototype.addRule = function(selector, rules, index) {
+  index = index || -1;
+	if('insertRule' in this.sheet) {
+		this.sheet.insertRule(selector + '{' + rules + '}', index);
+	}
+	else if('addRule' in this.sheet) {
+		this.sheet.addRule(selector, rules, index);
+	}
+}
+
 var NoticeBox = function (parent, isPopup) {
   this.classes = ['noticebox', 'alert', 'alert-danger'];
 
@@ -209,24 +240,29 @@ PopupChecker.prototype.isReplyBoxActive = function() {
   return this.isMaximized() && this.$popupMessageReplyBox && isPopupMessageReplyBoxDisplay || false;
 };
 
-var App = function(config) {
+var App = function(style) {
   var app = this;
 
   console.log('App.init');
-  this.internal_arr = config.includeDomain.split(/,\s*/);
+  this.style = style;
   this.noticeboxes = [];
 
   window.onhashchange = $.proxy(this.updateStatus, this);
 
   this.observeDOM( document.getElementsByTagName('body')[0] ,function(mutation){
     app.onDOMAddContacts(mutation);
-    app.onDOMAddListbox(mutation);
     app.onDOMRecipientInput(mutation);
   });
 
   setInterval($.proxy(function(){
     this.updateStatus();
   }, this), 3*1000);
+};
+
+App.prototype.setConfig = function(config) {
+  var displayRule = config.disableSuggestion ? 'display: none' : 'display: block';
+  this.style.sheet.addRule(_g.listboxWrap, displayRule);
+  this.internal_arr = config.includeDomain.split(/,\s*/);
 };
 
 App.prototype.getNoticeboxWithId = function(noticeboxId){
@@ -352,16 +388,6 @@ App.prototype.onDOMAddContacts = function(mutation) {
   }
 };
 
-App.prototype.onDOMAddListbox = function (mutation) {
-  var app = this,
-      $target = $(mutation.addedNodes),
-      hasClass = $target.hasClass(_g.listboxWrapClass);
-
-  if(hasClass){
-    // if user set to disable 'Conside Including' features, hide the Listbox
-  }
-};
-
 App.prototype.onDOMRecipientInput = function (mutation) {
   var app = this,
       $target = $(mutation.addedNodes),
@@ -438,12 +464,23 @@ App.prototype.setting = function(opts){
 
 
 $(document).ready(function(){
+  var app = new App(new Style());
   var defaultConfig = {
     includeDomain: 'gmail.com',
-    excludeDomain: 'hotmail.com,aol.com'
+    excludeDomain: 'hotmail.com,aol.com',
+    disableSuggestion: false
   };
 
   chrome.storage.sync.get(defaultConfig, function(config) {
-    window.noticeBeforeSend = new App(config);
+    app.setConfig(config);
+  });
+
+  chrome.storage.onChanged.addListener(function(changes) {
+    var config = {};
+    for(var item in changes) {
+      config[item] = changes[item].newValue;
+    }
+
+    app.setConfig(config);
   });
 });
